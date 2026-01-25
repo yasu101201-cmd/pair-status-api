@@ -10,8 +10,9 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    // ★本番では環境変数にする。まずは動かすため固定でOK（32文字以上）
-    private static final String SECRET = "CHANGE_ME_TO_A_LONG_SECRET_KEY_32CHARS+";
+    // ★環境変数（32文字以上）
+    private static final String SECRET =
+    System.getenv().getOrDefault("JWT_SECRET", "CHANGE_ME_TO_A_LONG_SECRET_KEY_32CHARS+");
     private static final Key KEY = Keys.hmacShaKeyFor(SECRET.getBytes());
 
     // Access Token の有効期限（例：15分）
