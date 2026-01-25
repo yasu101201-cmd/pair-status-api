@@ -1,16 +1,13 @@
 // package com.example.pairstatusapi.controller;
 
-// import com.example.pairstatusapi.dto.ConditionPostRequest;
-// // import com.example.pairstatusapi.dto.ConditionRequest;
-// // import com.example.pairstatusapi.entity.ConditionType;
-// import com.example.pairstatusapi.entity.ConditionUpdateEntity;
+// import com.example.pairstatusapi.entity.*;
 // import com.example.pairstatusapi.service.ConditionService;
 // import lombok.RequiredArgsConstructor;
-// import org.springframework.web.bind.annotation.*;
 // import org.springframework.http.ResponseEntity;
 // import org.springframework.security.core.Authentication;
+// import org.springframework.web.bind.annotation.*;
 
-// // import java.util.Map;
+// import java.util.Map;
 // import java.util.UUID;
 
 // @RestController
@@ -24,69 +21,44 @@
 //         return UUID.fromString((String) auth.getPrincipal());
 //     }
 
+//     @PostMapping
+//     public ResponseEntity<?> post(
+//             @RequestBody Map<String, String> body,
+//             Authentication auth
+//     ) {
+//         UUID userId = currentUserId(auth);
+
+//         MainCondition main =
+//                 MainCondition.valueOf(body.get("mainCondition"));
+
+//         SubCondition sub =
+//                 body.get("subCondition") == null
+//                         ? null
+//                         : SubCondition.valueOf(body.get("subCondition"));
+
+//         String note = body.get("note");
+
+//         return ResponseEntity.ok(
+//                 conditionService.post(userId, main, sub, note)
+//         );
+//     }
+
 //     @GetMapping("/me/latest")
 //     public ConditionUpdateEntity myLatest(Authentication auth) {
 //         return conditionService.getMyLatest(currentUserId(auth));
 //     }
 
-
-// @GetMapping("/partner/latest")
-// public ConditionUpdateEntity partnerLatest(Authentication auth) {
-//     return conditionService.getPartnerLatest(currentUserId(auth));
-// }
-
-// //    @PostMapping
-// // public ResponseEntity<?> postCondition(
-// //         @RequestBody Map<String, String> body,
-// //         Authentication auth
-// // ) {
-// //     UUID userId = currentUserId(auth);
-
-// //     String conditionStr = body.get("condition");
-// //     if (conditionStr == null || conditionStr.isBlank()) {
-// //         return ResponseEntity.badRequest().body("condition is required");
-// //     }
-
-// //     // "GENKI" → ConditionType.GENKI に変換
-// //     var condition = com.example.pairstatusapi.entity.MainCondition.valueOf(conditionStr);
-
-// //     var saved = conditionService.post(userId, condition);
-
-// //     return ResponseEntity.ok(saved);
-// // }
-// @PostMapping
-// public ResponseEntity<?> postCondition(
-//         @RequestBody ConditionPostRequest req,
-//         Authentication auth
-// ) {
-//     UUID userId = currentUserId(auth);
-
-//     if (req == null || req.condition() == null) {
-//         return ResponseEntity.badRequest().body("condition is required");
+//     @GetMapping("/partner/latest")
+//     public ConditionUpdateEntity partnerLatest(Authentication auth) {
+//         return conditionService.getPartnerLatest(currentUserId(auth));
 //     }
-
-//     String note = req.note();
-//     if (note != null) {
-//         note = note.trim();
-//         if (note.isBlank()) note = null;
-//         if (note != null && note.length() > 200) {
-//             return ResponseEntity.badRequest().body("note is too long (max 200)");
-//         }
-//     }
-
-//     var saved = conditionService.post(
-//             userId,
-//             req.condition(),
-//             req.subCondition(), // null OK
-//             note
-//     );
-
-//     return ResponseEntity.ok(saved);
 // }
-// }
+
 package com.example.pairstatusapi.controller;
 
-import com.example.pairstatusapi.entity.*;
+import com.example.pairstatusapi.entity.MainCondition;
+import com.example.pairstatusapi.entity.SubCondition;
+import com.example.pairstatusapi.entity.ConditionUpdateEntity;
 import com.example.pairstatusapi.service.ConditionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -107,35 +79,59 @@ public class ConditionController {
         return UUID.fromString((String) auth.getPrincipal());
     }
 
-    @PostMapping
-    public ResponseEntity<?> post(
-            @RequestBody Map<String, String> body,
-            Authentication auth
-    ) {
-        UUID userId = currentUserId(auth);
-
-        MainCondition main =
-                MainCondition.valueOf(body.get("mainCondition"));
-
-        SubCondition sub =
-                body.get("subCondition") == null
-                        ? null
-                        : SubCondition.valueOf(body.get("subCondition"));
-
-        String note = body.get("note");
-
-        return ResponseEntity.ok(
-                conditionService.post(userId, main, sub, note)
-        );
-    }
-
+    // 旧URL互換：自分の最新
     @GetMapping("/me/latest")
     public ConditionUpdateEntity myLatest(Authentication auth) {
         return conditionService.getMyLatest(currentUserId(auth));
     }
 
+    // 旧URL互換：相手の最新
     @GetMapping("/partner/latest")
     public ConditionUpdateEntity partnerLatest(Authentication auth) {
         return conditionService.getPartnerLatest(currentUserId(auth));
+    }
+
+    /**
+     * 旧形式: {"condition":"GENKI"}
+     * 新形式: {"mainCondition":"GENKI","subCondition":"SABISHII","note":"..."}
+     * 両方受ける
+     */
+    @PostMapping
+    public ResponseEntity<?> postCondition(@RequestBody Map<String, Object> body, Authentication auth) {
+        UUID userId = currentUserId(auth);
+
+        try {
+            // 新形式優先
+            String mainStr = str(body.get("mainCondition"));
+            String subStr  = str(body.get("subCondition"));
+            String note    = str(body.get("note"));
+
+            // 旧形式 fallback
+            if (mainStr == null || mainStr.isBlank()) {
+                mainStr = str(body.get("condition"));
+            }
+
+            if (mainStr == null || mainStr.isBlank()) {
+                return ResponseEntity.badRequest().body("mainCondition (or condition) is required");
+            }
+
+            MainCondition main = MainCondition.valueOf(mainStr);
+
+            SubCondition sub = null;
+            if (subStr != null && !subStr.isBlank() && !"NONE".equalsIgnoreCase(subStr)) {
+                sub = SubCondition.valueOf(subStr);
+            }
+
+            var saved = conditionService.post(userId, main, sub, note);
+            return ResponseEntity.ok(saved);
+
+        } catch (IllegalArgumentException e) {
+            // Enum変換失敗は 400 にする（500にしない）
+            return ResponseEntity.badRequest().body("Invalid enum value: " + e.getMessage());
+        }
+    }
+
+    private static String str(Object v) {
+        return v == null ? null : String.valueOf(v);
     }
 }
