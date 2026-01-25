@@ -1,7 +1,6 @@
 package com.example.pairstatusapi.service;
 
-import com.example.pairstatusapi.entity.ConditionType;
-import com.example.pairstatusapi.entity.ConditionUpdateEntity;
+import com.example.pairstatusapi.entity.*;
 import com.example.pairstatusapi.exception.NotFoundException;
 import com.example.pairstatusapi.repository.ConditionUpdateRepository;
 import lombok.RequiredArgsConstructor;
@@ -16,17 +15,27 @@ public class ConditionService {
     private final ConditionUpdateRepository conditionUpdateRepository;
     private final PairService pairService;
 
-    public ConditionUpdateEntity post(UUID userId, ConditionType condition) {
+    // ★ これ1本に統一
+    public ConditionUpdateEntity post(
+            UUID userId,
+            MainCondition mainCondition,
+            SubCondition subCondition,
+            String note
+    ) {
         ConditionUpdateEntity e = new ConditionUpdateEntity();
         e.setUserId(userId);
-        e.setCondition(condition);
+        e.setMainCondition(mainCondition);
+        e.setSubCondition(subCondition);
+        e.setNote(note);
         return conditionUpdateRepository.save(e);
     }
 
     public ConditionUpdateEntity getMyLatest(UUID userId) {
         return conditionUpdateRepository
                 .findFirstByUserIdOrderByCreatedAtDesc(userId)
-                .orElseThrow(() -> new NotFoundException("No condition yet. userId=" + userId));
+                .orElseThrow(() ->
+                        new NotFoundException("No condition yet. userId=" + userId)
+                );
     }
 
     public ConditionUpdateEntity getPartnerLatest(UUID myUserId) {
@@ -34,6 +43,8 @@ public class ConditionService {
 
         return conditionUpdateRepository
                 .findFirstByUserIdOrderByCreatedAtDesc(partnerUserId)
-                .orElseThrow(() -> new NotFoundException("Partner has no condition yet. partnerUserId=" + partnerUserId));
+                .orElseThrow(() ->
+                        new NotFoundException("Partner has no condition yet. partnerUserId=" + partnerUserId)
+                );
     }
 }
