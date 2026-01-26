@@ -1,9 +1,9 @@
 package com.example.pairstatusapi.entity;
 
 public enum MainCondition {
-    GENKI,
-    FUTSU,
-    WARUI,
-    SICK,
-    TALK
+    IIGAKANJI,  // いい感じ
+    FUTSU,      // ふつう
+    WARUI,      // しんどい（悪い）
+    TAICYOUWARUI, // 体調悪い
+    HANASHITAI  // 話したい
 }
