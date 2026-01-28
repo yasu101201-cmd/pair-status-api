@@ -26,6 +26,12 @@
       <artifactId>spring-boot-starter-web</artifactId>
     </dependency>
 
+    <!-- Flyway (DB migration) -->
+<dependency>
+  <groupId>org.flywaydb</groupId>
+  <artifactId>flyway-core</artifactId>
+</dependency>
+
     <!-- JPA -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
