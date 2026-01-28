@@ -1,13 +1,20 @@
 package com.example.pairstatusapi.entity;
 
 public enum SubCondition {
-    // 通常サブ（常に出す）
-    SABISHII,   // 寂しい
-    TSURAI,     // 辛い
-    URESHII,    // 嬉しい
 
-    // 体調サブ（「体調悪い」を押した時だけ出す）
-    TSUKARETA,  // 疲れた
-    NEMUI,      // 眠い
-    ONAKA       // お腹すいた
+    // --- 気持ち系 ---
+    LONELY,     // 寂しい
+    PAINFUL,    // 辛い
+    HAPPY,      // 嬉しい
+
+    // --- 生活 / 状態 ---
+    HUNGRY,     // お腹すいた
+    TIRED,      // 疲れた
+    SLEEPY,     // 眠い
+
+    // --- 体調 ---
+    COLD,       // 風邪気味
+    FEVER,      // 熱
+    HEADACHE,   // 頭痛
+    SLUGGISH    // だるい
 }
