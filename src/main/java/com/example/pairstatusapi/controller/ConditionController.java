@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.UUID;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -78,4 +79,9 @@ public class ConditionController {
     private static String str(Object v) {
         return v == null ? null : String.valueOf(v);
     }
+
+  @GetMapping("/talk")
+public List<ConditionUpdateEntity> talk(Authentication auth) {
+    return conditionService.getTalkHistory(currentUserId(auth));
+}
 }
