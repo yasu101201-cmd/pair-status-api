@@ -24,10 +24,10 @@ public class PairEntity {
     @Column(nullable = false)
     private PairState state;
 
-    @Column(name = "user_id_1", nullable = false)
+    @Column(name = "user_id1", nullable = false)
     private UUID userId1;
 
-    @Column(name = "user_id_2")
+    @Column(name = "user_id2")
     private UUID userId2;
 
     public enum PairState {

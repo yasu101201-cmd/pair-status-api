@@ -13,8 +13,8 @@ CREATE TABLE pairs (
     id UUID PRIMARY KEY,
     join_code VARCHAR(255) NOT NULL UNIQUE,
     state VARCHAR(255) NOT NULL,
-    user_id_1 UUID NOT NULL,
-    user_id_2 UUID
+    user_id1 UUID NOT NULL,
+    user_id2 UUID
 );
 
 -- condition_updates テーブル
