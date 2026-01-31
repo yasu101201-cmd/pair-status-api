@@ -49,7 +49,8 @@ class PairStatusApiApplicationTests {
 		assertNull(pair.getUserId2());
 		
 		// ユーザーが更新されているか確認
-		UserEntity updatedUser = userRepository.findById(userId).get();
+		UserEntity updatedUser = userRepository.findById(userId)
+				.orElseThrow(() -> new AssertionError("User not found"));
 		assertEquals(pair.getId(), updatedUser.getPairId());
 	}
 
